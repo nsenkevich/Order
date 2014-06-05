@@ -8,30 +8,36 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-
 use \Order\Services\OrderCalculator;
 use \Order\Entities\OrderFactory;
 use Order\Utils\XmlElement;
 
-class Calculator extends Command {
+class Calculator extends Command
+{
 
-  /**
-   * @var OrderCalculator 
-   */
-  private $orderCalculator;
-  
-  /**
-   * @param OrderCalculator $orderCalculator
-   * @param string $name
-   */
-    public function __construct(OrderCalculator $orderCalculator, $name = NULL)
+    /**
+     * @var OrderCalculator 
+     */
+    private $orderCalculator;
+
+    /**
+     * @var OrderFactory 
+     */
+    private $orderFactory;
+
+    /**
+     * @param OrderCalculator $orderCalculator
+     * @param string $name
+     */
+    public function __construct(OrderCalculator $orderCalculator, OrderFactory $orderFactory, $name = NULL)
     {
         $this->orderCalculator = $orderCalculator;
+        $this->orderFactory = $orderFactory;
         parent::__construct($name);
     }
-    
+
     protected function configure()
-    {   
+    {
         $this->setName("offer:calculator")
             ->setDescription("Display the order from an XML file and update its total.")
             ->addArgument('xml', InputArgument::REQUIRED, 'Which xml you want to proceed')
@@ -46,7 +52,7 @@ class Calculator extends Command {
     {
         $xml = $input->getArgument('xml');
         if ($xml) {
-          $this->orderCalculator->setOrder(OrderFactory::create(new XmlElement($xml, null, true)));
+            $this->orderCalculator->setOrder($this->orderFactory->create(new XmlElement($xml, null, true)));
         }
 
         if ($input->getOption('applyOffer')) {
@@ -56,4 +62,5 @@ class Calculator extends Command {
 
         $output->writeln($this->orderCalculator->getOrder()->getTotal());
     }
+
 }
